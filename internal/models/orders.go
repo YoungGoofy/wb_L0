@@ -10,8 +10,8 @@ type Orders struct {
 	DeliveryService   string `json:"delivery_service" fake:"{lettern:5}"   validate:"required,min=5,max=5"`
 	Shardkey          string `json:"shardkey" fake:"{regex:[0-9]{2}}" validate:"required,max=2"`
 	SmId              int    `json:"sm_id" fake:"{number:1, 5000}" validate:"required,gte=0,lte=5000"`
-	DateCreated       string `json:"date_created" fake:"{year}-{month}-{day}T{hour}:{minute}:{second}Z" format:"2006-01-02T06:22:19Z" validate:"required"`
-	OofShard          string `json:"oof_shard" fake:"{regex:[0-9]{2}}" validate:"required,max=2"`
+	//DateCreated       string `json:"date_created" fake:"{year}-{month}-{day}T{hour}:{minute}:{second}Z" format:"2006-01-02T06:22:19Z" validate:"required"`
+	OofShard string `json:"oof_shard" fake:"{regex:[0-9]{2}}" validate:"required,max=2"`
 
 	Delivery `json:"delivery" `
 	Payment  `json:"payment" `

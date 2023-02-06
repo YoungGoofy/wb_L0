@@ -2,10 +2,10 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"github.com/YoungGoofy/WB_L0/internal/config"
-	"github.com/YoungGoofy/WB_L0/internal/postgresql"
 	"github.com/YoungGoofy/WB_L0/internal/services/db"
-	"github.com/YoungGoofy/WB_L0/internal/services/mock"
+	"github.com/YoungGoofy/WB_L0/internal/services/postgresql"
 	"log"
 )
 
@@ -18,20 +18,19 @@ func main() {
 		return
 	}
 	defer pool.Close()
-	repo := db.NewRepository(pool)
-	for i := 0; i < 5; i++ {
-		newOrder := mock.NewOrder()
-		_, err = repo.CreateOrder(context.Background(), newOrder)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-	}
-	//var name string
-	//err = pool.QueryRow(context.Background(), testQuery, 0).Scan(&name)
-	//if err != nil {
-	//	log.Print(err)
-	//	return
+	repo := db.NewRepository(pool, pool)
+	//for i := 0; i < 5; i++ {
+	//	newOrder := mock.NewOrder()
+	//	err = repo.Create(context.Background(), newOrder)
+	//	if err != nil {
+	//		log.Println(err)
+	//		return
+	//	}
 	//}
-	//fmt.Println(name)
+	order, err := repo.GetOrderById(context.Background(), "1")
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	fmt.Println(order)
 }
