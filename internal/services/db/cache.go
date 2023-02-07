@@ -12,8 +12,7 @@ type OrderCache struct {
 }
 
 func NewCache(cache *cache.Cache) *OrderCache {
-	data := make(map[string]string)
-	cache.Data = data
+	cache.Data = make(map[string]string)
 	return &OrderCache{cache: cache}
 }
 
@@ -27,19 +26,19 @@ func (oc *OrderCache) Set(ctx context.Context, order *models.Orders) error {
 	return nil
 }
 
-func (oc *OrderCache) GetById(ctx context.Context, uid string) (models.Orders, error) {
+func (oc *OrderCache) GetById(ctx context.Context, uid string) (*models.Orders, error) {
 	item, err := oc.cache.Get(uid)
 	if err != nil {
-		return models.Orders{}, err
+		return nil, err
 	}
 
 	var order models.Orders
 
 	err = json.Unmarshal([]byte(item), &order)
 	if err != nil {
-		return models.Orders{}, err
+		return nil, err
 	}
-	return order, nil
+	return &order, nil
 }
 
 func (oc *OrderCache) Delete(ctx context.Context, uid string) {

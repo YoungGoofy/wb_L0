@@ -7,7 +7,7 @@ import (
 
 func NewOrder() *models.Orders {
 	var order models.Orders
-	gofakeit.Seed(1)
+	gofakeit.Seed(0)
 	err := gofakeit.Struct(&order)
 	if err != nil {
 		return nil

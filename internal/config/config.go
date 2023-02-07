@@ -12,6 +12,8 @@ type Config struct {
 	DatabasePort     string
 	DatabaseName     string
 	MaxAttempts      string
+	NatsClusterId    string
+	NatsHostname     string
 }
 
 func (config *Config) InitFromEnv() error {
@@ -25,5 +27,7 @@ func (config *Config) InitFromEnv() error {
 	config.DatabasePort = os.Getenv("dbport")
 	config.DatabaseName = os.Getenv("dbname")
 	config.MaxAttempts = os.Getenv("maxattempts")
+	config.NatsClusterId = os.Getenv("natsclusterid")
+	config.NatsHostname = os.Getenv("natshostname")
 	return nil
 }

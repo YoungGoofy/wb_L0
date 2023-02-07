@@ -3,20 +3,38 @@ package db
 import (
 	"context"
 	"github.com/YoungGoofy/WB_L0/internal/models"
-	"github.com/YoungGoofy/WB_L0/internal/services"
 	"github.com/YoungGoofy/WB_L0/internal/services/postgresql"
-	"github.com/jackc/pgx/v4/pgxpool"
 )
 
-type repository struct {
+type OrderRepository struct {
 	client postgresql.Client
-	pool   pgxpool.Pool
 }
 
-func (r *repository) CreateOrder(ctx context.Context, orders *models.Orders) (*models.Orders, error) {
+func NewOrderRepository(client postgresql.Client) *OrderRepository {
+	return &OrderRepository{client: client}
+}
+
+func (r *OrderRepository) GetIds(ctx context.Context) ([]string, error) {
+	var uids []string
+	rows, err := r.client.Query(ctx, getUID)
+	if err != nil {
+		return nil, err
+	}
+	var uid models.Orders
+	for rows.Next() {
+		err = rows.Scan(&uid.OrderUID)
+		if err != nil {
+			return nil, err
+		}
+		uids = append(uids, uid.OrderUID)
+	}
+	return uids, nil
+}
+
+func (r *OrderRepository) CreateOrder(ctx context.Context, orders *models.Orders) (*models.Orders, error) {
 	var newOrder models.Orders
 
-	if err := r.pool.QueryRow(ctx, queryOneCreateOrder,
+	if err := r.client.QueryRow(ctx, queryCreateOrder,
 		orders.OrderUID,
 		orders.TrackNumber,
 		orders.Entry,
@@ -35,9 +53,9 @@ func (r *repository) CreateOrder(ctx context.Context, orders *models.Orders) (*m
 	return &newOrder, nil
 }
 
-func (r *repository) Create(ctx context.Context, order *models.Orders) error {
+func (r *OrderRepository) Create(ctx context.Context, order *models.Orders) error {
 
-	_, err := r.pool.Exec(ctx, queryCreateOrder,
+	_, err := r.client.Exec(ctx, queryCreateOrder,
 		order.OrderUID,
 		order.TrackNumber,
 		order.Entry,
@@ -53,7 +71,7 @@ func (r *repository) Create(ctx context.Context, order *models.Orders) error {
 		return err
 	}
 
-	_, err = r.pool.Exec(ctx, queryCreateDelivery,
+	_, err = r.client.Exec(ctx, queryCreateDelivery,
 		order.OrderUID,
 		order.Delivery.Name,
 		order.Delivery.Phone,
@@ -66,7 +84,7 @@ func (r *repository) Create(ctx context.Context, order *models.Orders) error {
 		return err
 	}
 
-	_, err = r.pool.Exec(ctx, queryCreatePayment,
+	_, err = r.client.Exec(ctx, queryCreatePayment,
 		order.OrderUID,
 		order.Payment.Transaction,
 		order.Payment.RequestId,
@@ -83,7 +101,7 @@ func (r *repository) Create(ctx context.Context, order *models.Orders) error {
 	}
 
 	for _, v := range order.Items {
-		_, err = r.pool.Exec(ctx, queryCreateItem,
+		_, err = r.client.Exec(ctx, queryCreateItem,
 			order.OrderUID,
 			v.ChrtId,
 			v.TrackNumber,
@@ -104,9 +122,9 @@ func (r *repository) Create(ctx context.Context, order *models.Orders) error {
 	return nil
 }
 
-func (r *repository) GetOrderById(ctx context.Context, uid string) (models.Orders, error) {
+func (r *OrderRepository) GetOrderById(ctx context.Context, uid string) (models.Orders, error) {
 	var order models.Orders
-	if err := r.pool.QueryRow(ctx, getOrderByOrderUIDQuery, uid).Scan(
+	if err := r.client.QueryRow(ctx, getOrderByOrderUIDQuery, uid).Scan(
 		&order.OrderUID,
 		&order.TrackNumber,
 		&order.Entry,
@@ -116,17 +134,17 @@ func (r *repository) GetOrderById(ctx context.Context, uid string) (models.Order
 		&order.DeliveryService,
 		&order.Shardkey,
 		&order.SmId,
-		//&order.DateCreated,
+		&order.DateCreated,
 		&order.OofShard); err != nil {
 		return order, err
 	}
 	return order, nil
 }
 
-func (r *repository) GetFullById(ctx context.Context, uid string) (*models.Orders, error) {
+func (r *OrderRepository) GetFullById(ctx context.Context, uid string) (*models.Orders, error) {
 	var order models.Orders
 
-	err := r.pool.QueryRow(ctx, getOrderByOrderUIDQuery, uid).Scan(
+	err := r.client.QueryRow(ctx, getOrderByOrderUIDQuery, uid).Scan(
 		&order.OrderUID,
 		&order.TrackNumber,
 		&order.Entry,
@@ -136,13 +154,13 @@ func (r *repository) GetFullById(ctx context.Context, uid string) (*models.Order
 		&order.DeliveryService,
 		&order.Shardkey,
 		&order.SmId,
-		//&order.DateCreated,
+		&order.DateCreated,
 		&order.OofShard)
 	if err != nil {
 		return nil, err
 	}
 
-	err = r.pool.QueryRow(ctx, getDeliveryByOrderUIDQuery, uid).Scan(
+	err = r.client.QueryRow(ctx, getDeliveryByOrderUIDQuery, uid).Scan(
 		&order.Delivery.Name,
 		&order.Delivery.Phone,
 		&order.Delivery.Zip,
@@ -154,7 +172,7 @@ func (r *repository) GetFullById(ctx context.Context, uid string) (*models.Order
 		return nil, err
 	}
 
-	err = r.pool.QueryRow(ctx, getPaymentByOrderUIDQuery, uid).Scan(
+	err = r.client.QueryRow(ctx, getPaymentByOrderUIDQuery, uid).Scan(
 		&order.Payment.Transaction,
 		&order.Payment.RequestId,
 		&order.Payment.Currency,
@@ -169,7 +187,7 @@ func (r *repository) GetFullById(ctx context.Context, uid string) (*models.Order
 		return nil, err
 	}
 
-	rows, err := r.pool.Query(ctx, getItemsByOrderUIDQuery, uid)
+	rows, err := r.client.Query(ctx, getItemsByOrderUIDQuery, uid)
 	if err != nil {
 		return nil, err
 	}
@@ -194,8 +212,4 @@ func (r *repository) GetFullById(ctx context.Context, uid string) (*models.Order
 		order.Items = append(order.Items, item)
 	}
 	return &order, nil
-}
-
-func NewRepository(client postgresql.Client, pool *pgxpool.Pool) services.PGRepository {
-	return &repository{client: client}
 }
