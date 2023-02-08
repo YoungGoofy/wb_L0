@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/YoungGoofy/WB_L0/internal/config"
+	"github.com/YoungGoofy/WB_L0/internal/services"
 	"github.com/YoungGoofy/WB_L0/internal/services/cache"
 	"github.com/YoungGoofy/WB_L0/internal/services/postgresql"
 	"github.com/YoungGoofy/WB_L0/internal/services/server"
@@ -21,21 +22,18 @@ func main() {
 		return
 	}
 	var c cache.Cache
-	//cacheRepo := db.NewCache(&c)
-	//pgRepo := db.NewOrderRepository(pool)
-	//repo := db.NewRepositories(pgRepo, cacheRepo)
-	//order, err := repo.GetById(ctx, "bn0joxy0phfkx9e75h9")
-	//if err != nil {
-	//	return
-	//}
-	//fmt.Println(order)
 	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
-	subServer := server.NewSubServer(&cfg, pool, &c, logger)
+	logger.Println("Start subscriber")
+	natsConn, err := services.NewNatsConnect(&cfg, "subscriber", logger)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	subServer := server.NewSubServer(&cfg, pool, &c, logger, natsConn)
 	log.Println("http://localhost:8080/api")
 	err = subServer.RunServer()
 	if err != nil {
 		log.Print(err)
 		return
 	}
-
 }

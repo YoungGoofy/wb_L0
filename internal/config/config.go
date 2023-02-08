@@ -28,6 +28,5 @@ func (config *Config) InitFromEnv() error {
 	config.DatabaseName = os.Getenv("dbname")
 	config.MaxAttempts = os.Getenv("maxattempts")
 	config.NatsClusterId = os.Getenv("natsclusterid")
-	config.NatsHostname = os.Getenv("natshostname")
 	return nil
 }

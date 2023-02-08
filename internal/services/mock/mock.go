@@ -3,6 +3,7 @@ package mock
 import (
 	"github.com/YoungGoofy/WB_L0/internal/models"
 	"github.com/brianvoe/gofakeit/v6"
+	"log"
 )
 
 func NewOrder() *models.Orders {
@@ -12,5 +13,6 @@ func NewOrder() *models.Orders {
 	if err != nil {
 		return nil
 	}
+	log.Println("Generate fake order")
 	return &order
 }

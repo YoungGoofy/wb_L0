@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/YoungGoofy/WB_L0/internal/models"
 	"github.com/YoungGoofy/WB_L0/internal/services/cache"
+	"log"
 )
 
 type OrderCache struct {
@@ -23,6 +24,7 @@ func (oc *OrderCache) Set(ctx context.Context, order *models.Orders) error {
 	}
 
 	oc.cache.Put(order.OrderUID, string(orderBytes))
+	log.Println("Add new order in the cache")
 	return nil
 }
 
@@ -38,11 +40,13 @@ func (oc *OrderCache) GetById(ctx context.Context, uid string) (*models.Orders, 
 	if err != nil {
 		return nil, err
 	}
+	log.Println("Get order from cache by id")
 	return &order, nil
 }
 
 func (oc *OrderCache) Delete(ctx context.Context, uid string) {
 	oc.cache.Del(uid)
+	log.Println("Delete order from cache")
 }
 
 func (oc *OrderCache) GetSize() int {

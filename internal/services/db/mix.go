@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/YoungGoofy/WB_L0/internal/models"
 	"github.com/YoungGoofy/WB_L0/internal/services"
+	"log"
 )
 
 type Repositories struct {
@@ -18,8 +19,10 @@ func NewRepositories(pgRepository services.PGRepository, cacheRepository service
 func (r *Repositories) Create(ctx context.Context, orders *models.Orders) error {
 	err := r.pgRepo.Create(ctx, orders)
 	if err != nil {
+		log.Fatal("Error for creating new order")
 		return err
 	}
+	log.Println("Add order in database")
 	return nil
 }
 

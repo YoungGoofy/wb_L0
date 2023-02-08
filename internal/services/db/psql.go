@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/YoungGoofy/WB_L0/internal/models"
 	"github.com/YoungGoofy/WB_L0/internal/services/postgresql"
+	"log"
 )
 
 type OrderRepository struct {
@@ -28,6 +29,7 @@ func (r *OrderRepository) GetIds(ctx context.Context) ([]string, error) {
 		}
 		uids = append(uids, uid.OrderUID)
 	}
+	log.Println("Get id list")
 	return uids, nil
 }
 
